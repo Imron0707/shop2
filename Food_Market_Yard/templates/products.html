@@ -2,12 +2,28 @@
 
 {% load custom_filters %}
 
+{% load custom_tags %}
+
 {% block title %}
 Products
 {% endblock title %}
 
 {% block content %}
    <h1>Все товары</h1>
+       {# Добавляем форму, которая объединяет набор полей, которые будут отправляться в запросе #}
+<form action="" method="get" >
+    {{ filterset.form.non_field_errors }}
+
+    {{ filterset.form.name__icontains.errors }}
+    <label for="{{ filterset.form.name__icontains.id_for_label }}">Search</label>
+    <input
+        id="{{ filterset.form.name__icontains.id }}"
+        name="{{ filterset.form.name__icontains.name }}"
+        value="{{ filterset.form.name__icontains.value }}"
+        class="form-control"
+    >
+    <input type="submit" class="mt-3 btn-primary" value="Найти" />
+</form>
    <h3>{{ time_now|date:'M d Y' }}</h3>
    <!-- Если в переменной next_sale будет None,
    то выведется указанный в фильтре текст -->
@@ -39,23 +55,22 @@ Products
        <h2>Товаров нет!</h2>
    {% endif %}
     {# Информация о предыдущих страницах #}
-   {% if page_obj.has_previous %}
-       <a href="?page=1">1</a>
+  {% if page_obj.has_previous %}
+       {# Для каждой ссылки пагинации указываем обработку через новый тег #}
+       <a href="?{% url_replace page=1 %}">1</a>
        {% if page_obj.previous_page_number != 1 %}
            ...
-           <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
        {% endif %}
    {% endif %}
 
-   {# Информация о текущей странице #}
    {{ page_obj.number }}
 
-   {# Информация о следующих страницах #}
    {% if page_obj.has_next %}
-       <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
        {% if paginator.num_pages != page_obj.next_page_number %}
            ...
-           <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
        {% endif %}
    {% endif %}
 
