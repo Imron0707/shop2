@@ -1,11 +1,13 @@
 # Импортируем класс, который говорит нам о том,
 # что в этом представлении мы будем выводить список объектов из БД
-from django.views.generic import ListView, DetailView, UpdateView
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from .models import Product
 from datetime import datetime
 from .filters import ProductFilter
 from .forms import ProductForm
 from django.shortcuts import render, HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 
 
 class ProductsList(ListView):
@@ -72,8 +74,9 @@ def create_product(request):
     return render(request, 'product_edit.html', {'form': form})
 
 
-class ProductUpdate(UpdateView):
+class ProductUpdate(LoginRequiredMixin, UpdateView):
     form_class = ProductForm
+    raise_exception = True
     model = Product
     template_name = 'product_edit.html'
 
