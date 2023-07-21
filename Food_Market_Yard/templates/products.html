@@ -1,7 +1,6 @@
 {% extends 'flatpages/default.html' %}
 
 {% load custom_filters %}
-
 {% load custom_tags %}
 
 {% block title %}
@@ -9,69 +8,78 @@ Products
 {% endblock title %}
 
 {% block content %}
-   <h1>Все товары</h1>
-       {# Добавляем форму, которая объединяет набор полей, которые будут отправляться в запросе #}
-<form action="" method="get" >
-    {{ filterset.form.non_field_errors }}
+    <h1>Все товары</h1>
 
-    {{ filterset.form.name__icontains.errors }}
-    <label for="{{ filterset.form.name__icontains.id_for_label }}">Search</label>
-    <input
-        id="{{ filterset.form.name__icontains.id }}"
-        name="{{ filterset.form.name__icontains.name }}"
-        value="{{ filterset.form.name__icontains.value }}"
-        class="form-control"
-    >
-    <input type="submit" class="mt-3 btn-primary" value="Найти" />
-</form>
-   <h3>{{ time_now|date:'M d Y' }}</h3>
-   <!-- Если в переменной next_sale будет None,
-   то выведется указанный в фильтре текст -->
-   <h3> {{ next_sale|default_if_none:"Чуть позже сообщим о распродаже!" }} </h3>
+    <form action="" method="get">
+        {{ filterset.form.as_p }}
+        <input type="submit" value="Найти" />
+    </form>
 
-   <hr>
-   {% if products %}
-       <table>
-           <tr>
-               <td>Название</td>
-               <td>Описание</td>
-               <td>Категория</td>
-               <td>Цена</td>
-               <td>Количество</td>
-           </tr>
+    <hr>
 
-           {% for product in products %}
-           <tr>
-               <td>{{ product.name }}</td>
-               <td>{{ product.description|truncatewords:2 }}</td>
-               <td>{{ product.category.name }}</td>
-               <td>{{ product.price|currency:"rub" }}</td>
-               <td>{{ product.quantity }}</td>
-           </tr>
-           {% endfor %}
+    {# Теперь будем проверять не request.user.is_authenticated, а конкретные права #}
+    {% if perms.simpleapp.add_product %}
+    <a href="{% url 'product_create' %}">Добавить товар</a>
+    {% endif %}
 
-       </table>
-   {% else %}
-       <h2>Товаров нет!</h2>
-   {% endif %}
-    {# Информация о предыдущих страницах #}
-  {% if page_obj.has_previous %}
-       {# Для каждой ссылки пагинации указываем обработку через новый тег #}
-       <a href="?{% url_replace page=1 %}">1</a>
-       {% if page_obj.previous_page_number != 1 %}
-           ...
-           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
-       {% endif %}
-   {% endif %}
+    {% if products %}
+        <table>
+            <tr>
+                <td>Название</td>
+                <td>Описание</td>
+                <td>Категория</td>
+                <td>Цена</td>
+                <td>Количество</td>
 
-   {{ page_obj.number }}
+                {# Условие получается составным. #}
+                {% if perms.simpleapp.change_product or perms.simpleapp.delete_product %}
+                <td>Действия</td>
+                {% endif %}
 
-   {% if page_obj.has_next %}
-       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
-       {% if paginator.num_pages != page_obj.next_page_number %}
-           ...
-           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
-       {% endif %}
-   {% endif %}
+            </tr>
+
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.description|truncatechars:15 }}</td>
+                <td>{{ product.category.name }}</td>
+                <td>{{ product.price|currency }}</td>
+                <td>{{ product.quantity }}</td>
+
+                <td>
+                    {# А здесь доступ для каждой ссылки теперь будем проверять отдельно #}
+                    {% if perms.simpleapp.change_product %}
+                    <a href="{% url 'product_update' pk=product.id %}">Изменить</a>
+                    {% endif %}
+                    {% if perms.simpleapp.delete_product %}
+                    <a href="{% url 'product_delete' product.id %}">Удалить</a>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </table>
+    {% else %}
+        <h2>Товаров нет!</h2>
+    {% endif %}
+
+    {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=1 %}">1</a>
+        {% if page_obj.previous_page_number != 1 %}
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+        {% endif %}
+    {% endif %}
+
+    {{ page_obj.number }}
+
+    {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        {% if paginator.num_pages != page_obj.next_page_number %}
+            ...
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+        {% endif %}
+    {% endif %}
 
 {% endblock content %}

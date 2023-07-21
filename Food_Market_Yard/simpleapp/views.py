@@ -6,7 +6,7 @@ from datetime import datetime
 from .filters import ProductFilter
 from .forms import ProductForm
 from django.shortcuts import render, HttpResponseRedirect
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
 
 
@@ -74,14 +74,14 @@ def create_product(request):
     return render(request, 'product_edit.html', {'form': form})
 
 
-class ProductUpdate(LoginRequiredMixin, UpdateView):
+class ProductUpdate(PermissionRequiredMixin, UpdateView):
     form_class = ProductForm
     raise_exception = True
     model = Product
     template_name = 'product_edit.html'
 
 
-class ProductDelete(DeleteView):
+class ProductDelete(PermissionRequiredMixin, DeleteView):
     model = Product
     template_name = 'product_delete.html'
     success_url = reverse_lazy('product_list')
