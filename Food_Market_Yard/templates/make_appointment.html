@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Запись на прием</title>
+</head>
+<body>
+    <h1>Запись на прием</h1>
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="client_name">Ваше имя:</label>
+        <input type="text" id="client_name" name="client_name" required><br>
+
+        <label for="appointment">Дата встречи:</label>
+        <input type="date" id="appointment" name="date" required><br>
+
+        <label for="message">Дополнительное сообщение:</label><br>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea><br>
+
+        <input type="submit" value="Записаться на прием">
+    </form>
+</body>
+</html>
